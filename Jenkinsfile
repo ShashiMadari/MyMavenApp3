@@ -4,7 +4,7 @@ pipeline {
     tools {
         // Ensure these tools are configured in Jenkins Global Tool Configuration
         gradle 'Gradle'     // Name of Gradle installation
-                 // Name of JDK installation
+        jdk 'JDK'         // Name of JDK installation
     }
 
     environment {
