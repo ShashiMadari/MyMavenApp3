@@ -2,44 +2,48 @@ pipeline {
     agent any
 
     tools {
-        gradle 'Gradle'  // Make sure this matches the tool name in Jenkins Global Tool Config
+        // Ensure these tools are configured in Jenkins Global Tool Configuration
+        gradle 'Gradle'     // Name of Gradle installation
+        jdk 'JDK_11'          // Name of JDK installation
+    }
+
+    environment {
+        GRADLE_OPTS = "-Dorg.gradle.daemon=false"
     }
 
     stages {
         stage('Checkout') {
             steps {
+                // Replace with your GitHub repo URL and branch if needed
                 git branch: 'master', url: 'https://github.com/ShashiMadari/MyMavenApp3.git'
             }
         }
 
         stage('Build') {
             steps {
-                script {
-                    sh 'chmod +x ./gradlew'               // Ensure gradlew is executable
-                    sh './gradlew clean build --info --stacktrace'
-                }
+                sh './gradlew clean build'
             }
         }
 
-        stage('Run JAR') {
+        stage('Test') {
             steps {
-                script {
-                    def jarFiles = sh(script: 'ls build/libs/*.jar', returnStdout: true).trim().split('\n')
-                    if (jarFiles.length == 0) {
-                        error('No JAR file found in build/libs.')
-                    }
-                    sh "java -jar ${jarFiles[0]}"
-                }
+                sh './gradlew test'
+            }
+        }
+
+        stage('Archive JAR') {
+            steps {
+                archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true
             }
         }
     }
 
     post {
         success {
-            echo 'Gradle build and JAR run completed successfully!'
+            echo 'Build and tests succeeded.'
         }
         failure {
-            echo 'Gradle build or execution failed.'
+            echo 'Build or tests failed.'
         }
     }
 }
